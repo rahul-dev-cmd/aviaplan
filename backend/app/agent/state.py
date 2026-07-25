@@ -1,21 +1,30 @@
-from typing import TypedDict, List, Dict, Any, Optional
+from typing import TypedDict
 
-class AgentState(TypedDict):
-    query: str
+class AgentState(TypedDict, total=False):
     origin: str
     destination: str
     start_date: str
+    budget_inr: int
+    flights: list
+    flight_source: str
+    flight_log_note: str | None
+    hotels: list
+    hotel_source: str
+    hotel_log_note: str | None
+    weather: dict | None
+    selected_flight: dict | None
+    selected_hotel: dict | None
+    total_cost: int | None
+    budget_status: str | None  # "within_budget" or "over_budget"
+    action_log: list[str]  # timestamped human-readable steps
+    final_summary: str | None
+
+    # Optional fields for backward compatibility with frontend/routes
+    query: str
     end_date: str
     max_budget: float
-    flight_options: List[Dict[str, Any]]
-    hotel_options: List[Dict[str, Any]]
-    weather_info: Optional[Dict[str, Any]]
-    selected_flight: Optional[Dict[str, Any]]
-    selected_hotel: Optional[Dict[str, Any]]
-    total_cost: float
     is_within_budget: bool
-    flight_index: int
-    hotel_index: int
+    weather_info: dict | None
     summary: str
-    itinerary: Dict[str, Any]
-    action_logs: List[Dict[str, Any]]
+    itinerary: dict
+    action_logs: list

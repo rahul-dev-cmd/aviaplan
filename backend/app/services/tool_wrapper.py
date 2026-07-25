@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Tuple, List, Dict, Any
+from typing import Tuple, List, Dict, Any, Optional
 from app.services.flight_api import fetch_live_flights
 from app.services.hotel_api import fetch_live_hotels
 from app.services.weather_api import fetch_weather_forecast
@@ -7,6 +7,55 @@ from app.services.mock_data import get_mock_flights, get_mock_hotels
 
 def get_timestamp() -> str:
     return datetime.now().strftime("%H:%M:%S")
+
+async def get_flights(origin: str, destination: str, start_date: str) -> Tuple[List[Dict[str, Any]], str, Optional[str]]:
+    """
+    Fetches flights for origin -> destination on start_date.
+    Tries live RapidAPI first. If live API fails or key is missing, falls back to local cached mock data.
+    Returns (flights_list, source, flight_log_note).
+    """
+    try:
+        live_flights = await fetch_live_flights(origin, destination, start_date)
+        if live_flights:
+            for f in live_flights:
+                f["is_mock"] = False
+                f["source_label"] = "RapidAPI Skyscanner Live"
+            return live_flights, "live", None
+    except Exception:
+        pass
+
+    mock_flights, is_degraded, note = get_mock_flights(origin, destination)
+    for f in mock_flights:
+        f["is_mock"] = True
+        f["source_label"] = "Local Verified Mock Store"
+
+    log_note = note if (is_degraded and note) else f"Retrieved {len(mock_flights)} flight options from local cache"
+    return mock_flights, "cached", log_note
+
+async def get_hotels(destination: str) -> Tuple[List[Dict[str, Any]], str, Optional[str]]:
+    """
+    Fetches hotels for destination city.
+    Tries live RapidAPI Booking.com first. On failure, falls back to local cached mock data.
+    Returns (hotels_list, source, hotel_log_note).
+    """
+    try:
+        live_hotels = await fetch_live_hotels(destination)
+        if live_hotels:
+            for h in live_hotels:
+                h["is_mock"] = False
+                h["source_label"] = "RapidAPI Booking.com Live"
+            return live_hotels, "live", None
+    except Exception:
+        pass
+
+    mock_hotels, is_degraded, note = get_mock_hotels(destination)
+    for h in mock_hotels:
+        h["is_mock"] = True
+        h["source_label"] = "Local Verified Mock Store"
+
+    log_note = note if (is_degraded and note) else f"Retrieved {len(mock_hotels)} hotel options from local cache"
+    return mock_hotels, "cached", log_note
+
 
 async def execute_flight_search_tool(origin: str, destination: str, date: str) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """

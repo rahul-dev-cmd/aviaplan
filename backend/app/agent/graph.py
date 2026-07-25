@@ -35,7 +35,7 @@ def create_trip_planner_graph():
 trip_planner_agent = create_trip_planner_graph()
 
 async def run_trip_planner(
-    query: str,
+    query: str = "",
     origin: str = None,
     destination: str = None,
     start_date: str = None,
@@ -45,22 +45,33 @@ async def run_trip_planner(
     """
     Executes the full LangGraph state machine workflow asynchronously.
     """
+    budget_val = int(max_budget) if max_budget else 15000
+    
     initial_state: AgentState = {
         "query": query,
-        "origin": origin or "",
-        "destination": destination or "",
-        "start_date": start_date or "",
-        "end_date": end_date or "",
-        "max_budget": max_budget or 0.0,
+        "origin": origin or "DEL",
+        "destination": destination or "GOA",
+        "start_date": start_date or "2026-08-01",
+        "end_date": end_date or "2026-08-03",
+        "budget_inr": budget_val,
+        "max_budget": float(budget_val),
+        "flights": [],
+        "flight_source": "",
+        "flight_log_note": None,
+        "hotels": [],
+        "hotel_source": "",
+        "hotel_log_note": None,
+        "weather": None,
+        "selected_flight": None,
+        "selected_hotel": None,
+        "total_cost": None,
+        "budget_status": None,
+        "action_log": [],
+        "final_summary": None,
         "flight_options": [],
         "hotel_options": [],
         "weather_info": None,
-        "selected_flight": None,
-        "selected_hotel": None,
-        "total_cost": 0.0,
         "is_within_budget": True,
-        "flight_index": 0,
-        "hotel_index": 0,
         "summary": "",
         "itinerary": {},
         "action_logs": []
@@ -68,3 +79,4 @@ async def run_trip_planner(
     
     final_state = await trip_planner_agent.ainvoke(initial_state)
     return final_state
+
