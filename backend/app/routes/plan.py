@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import APIRouter, HTTPException
 from app.models import TripRequest, TripResponse
 from app.agent.graph import run_trip_planner
@@ -6,37 +7,66 @@ router = APIRouter()
 
 @router.post("/plan", response_model=TripResponse)
 async def plan_trip_endpoint(request: TripRequest):
+    """
+    Executes the autonomous trip planning workflow using the LangGraph StateGraph agent.
+    """
     try:
-        effective_budget = request.budget_inr or request.max_budget or 15000.0
-        effective_query = request.query or f"Plan a trip from {request.origin or 'DEL'} to {request.destination or 'GOA'} under ₹{effective_budget}"
-        
-        agent_result = await run_trip_planner(
-            query=effective_query,
-            origin=request.origin,
-            destination=request.destination,
-            start_date=request.start_date,
-            end_date=request.end_date,
-            max_budget=effective_budget
+        origin = request.origin or "DEL"
+        destination = request.destination or "GOA"
+        start_date = request.start_date or datetime.now().strftime("%Y-%m-%d")
+        budget_inr = int(request.budget_inr or request.max_budget or 15000)
+
+        # Run the compiled trip planner graph
+        final_state = await run_trip_planner(
+            origin=origin,
+            destination=destination,
+            start_date=start_date,
+            budget_inr=budget_inr
         )
-        
-        logs = agent_result.get("action_logs", [])
-        response = TripResponse(
+
+        selected_flight = final_state.get("selected_flight")
+        selected_hotel = final_state.get("selected_hotel")
+        total_cost = float(final_state.get("total_cost") or 0.0)
+        budget_status = final_state.get("budget_status") or "within_budget"
+        is_within = (budget_status == "within_budget")
+        weather = final_state.get("weather") or final_state.get("weather_info")
+        final_summary = final_state.get("final_summary") or final_state.get("summary") or ""
+
+        # Map logs for Pydantic response model compatibility
+        raw_logs_dicts = final_state.get("action_logs") or []
+        raw_log_strings = final_state.get("action_log") or []
+
+        log_items = []
+        if raw_logs_dicts:
+            log_items = raw_logs_dicts
+        else:
+            for s in raw_log_strings:
+                log_items.append({
+                    "timestamp": datetime.now().strftime("%H:%M:%S"),
+                    "node": "agent",
+                    "status": "INFO",
+                    "message": str(s)
+                })
+
+        return TripResponse(
             success=True,
-            origin=agent_result.get("origin", "DEL"),
-            destination=agent_result.get("destination", "GOA"),
-            start_date=agent_result.get("start_date", ""),
-            end_date=agent_result.get("end_date", ""),
-            max_budget=agent_result.get("max_budget", 15000.0),
-            total_cost=agent_result.get("total_cost", 0.0),
-            is_within_budget=agent_result.get("is_within_budget", True),
-            selected_flight=agent_result.get("selected_flight"),
-            selected_hotel=agent_result.get("selected_hotel"),
-            weather_info=agent_result.get("weather_info"),
-            summary=agent_result.get("summary", ""),
-            itinerary=agent_result.get("itinerary", {}),
-            action_logs=logs,
-            action_log=logs
+            origin=final_state.get("origin", origin),
+            destination=final_state.get("destination", destination),
+            start_date=final_state.get("start_date", start_date),
+            end_date=final_state.get("end_date", ""),
+            max_budget=float(budget_inr),
+            total_cost=total_cost,
+            is_within_budget=is_within,
+            selected_flight=selected_flight,
+            selected_hotel=selected_hotel,
+            weather_info=weather,
+            summary=final_summary,
+            itinerary=final_state.get("itinerary", {}),
+            action_logs=log_items,
+            action_log=log_items
         )
-        return response
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Agent execution error: {str(e)}")
+    except Exception as err:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Trip planner graph execution error: {str(err)}"
+        )

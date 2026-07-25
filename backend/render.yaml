@@ -12,5 +12,5 @@ services:
         sync: false
       - key: RAPIDAPI_KEY
         sync: false
-      - key: CORS_ORIGINS
-        value: "*"
+      - key: FRONTEND_URL
+        sync: false

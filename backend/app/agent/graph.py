@@ -10,6 +10,13 @@ from app.agent.nodes import (
 )
 
 def create_trip_planner_graph():
+    """
+    Constructs and compiles the linear LangGraph StateGraph workflow.
+
+    Sequence:
+    planner_node → flight_search_node → hotel_search_node → weather_node →
+    budget_check_node → synthesizer_node → END
+    """
     workflow = StateGraph(AgentState)
 
     # 1. Add nodes
@@ -20,7 +27,7 @@ def create_trip_planner_graph():
     workflow.add_node("budget_check", budget_check_node)
     workflow.add_node("synthesizer", synthesizer_node)
 
-    # 2. Wire edges
+    # 2. Wire linear edges
     workflow.set_entry_point("planner")
     workflow.add_edge("planner", "flight_search")
     workflow.add_edge("flight_search", "hotel_search")
@@ -32,29 +39,34 @@ def create_trip_planner_graph():
     return workflow.compile()
 
 # Global compiled graph instance
-trip_planner_agent = create_trip_planner_graph()
+trip_planner_graph = create_trip_planner_graph()
+
 
 async def run_trip_planner(
-    query: str = "",
-    origin: str = None,
-    destination: str = None,
-    start_date: str = None,
-    end_date: str = None,
-    max_budget: float = None
-) -> AgentState:
+    origin: str = "DEL",
+    destination: str = "GOA",
+    start_date: str = "2026-08-01",
+    budget_inr: int = 15000,
+    **kwargs
+) -> dict:
     """
-    Executes the full LangGraph state machine workflow asynchronously.
+    Executes the autonomous trip planning LangGraph workflow asynchronously.
+
+    Initializes AgentState with input fields and empty/None defaults, invokes 
+    the compiled graph, and returns the final state dictionary.
     """
-    budget_val = int(max_budget) if max_budget else 15000
+    eff_origin = origin or kwargs.get("origin") or "DEL"
+    eff_destination = destination or kwargs.get("destination") or "GOA"
+    eff_start_date = start_date or kwargs.get("start_date") or "2026-08-01"
     
+    raw_budget = budget_inr if budget_inr is not None else kwargs.get("max_budget")
+    eff_budget_inr = int(raw_budget) if raw_budget else 15000
+
     initial_state: AgentState = {
-        "query": query,
-        "origin": origin or "DEL",
-        "destination": destination or "GOA",
-        "start_date": start_date or "2026-08-01",
-        "end_date": end_date or "2026-08-03",
-        "budget_inr": budget_val,
-        "max_budget": float(budget_val),
+        "origin": eff_origin,
+        "destination": eff_destination,
+        "start_date": eff_start_date,
+        "budget_inr": eff_budget_inr,
         "flights": [],
         "flight_source": "",
         "flight_log_note": None,
@@ -68,6 +80,10 @@ async def run_trip_planner(
         "budget_status": None,
         "action_log": [],
         "final_summary": None,
+        # Helper fields for API/test compatibility
+        "query": kwargs.get("query", f"Trip from {eff_origin} to {eff_destination}"),
+        "end_date": kwargs.get("end_date", ""),
+        "max_budget": float(eff_budget_inr),
         "flight_options": [],
         "hotel_options": [],
         "weather_info": None,
@@ -76,7 +92,6 @@ async def run_trip_planner(
         "itinerary": {},
         "action_logs": []
     }
-    
-    final_state = await trip_planner_agent.ainvoke(initial_state)
-    return final_state
 
+    final_state = await trip_planner_graph.ainvoke(initial_state)
+    return dict(final_state)

@@ -13,13 +13,29 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configure CORS
-cors_origins_raw = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,*")
-cors_origins = [origin.strip() for origin in cors_origins_raw.split(",")]
+# Configure CORS dynamically using FRONTEND_URL and CORS_ORIGINS env vars
+frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+cors_origins_raw = os.getenv("CORS_ORIGINS", "")
+
+allowed_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+
+if frontend_url:
+    for url in frontend_url.split(","):
+        cleaned = url.strip()
+        if cleaned and cleaned not in allowed_origins:
+            allowed_origins.append(cleaned)
+
+if cors_origins_raw:
+    for url in cors_origins_raw.split(","):
+        cleaned = url.strip()
+        if cleaned and cleaned not in allowed_origins:
+            allowed_origins.append(cleaned)
+
+allow_all = "*" in allowed_origins or "*" in cors_origins_raw
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if "*" in cors_origins else cors_origins,
+    allow_origins=["*"] if allow_all else allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -37,4 +53,4 @@ def read_root():
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "service": "aviaplan-backend"}
+    return {"status": "ok"}
