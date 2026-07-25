@@ -14,75 +14,86 @@ def load_json_file(filepath: str) -> List[Dict[str, Any]]:
 
 def get_mock_flights(origin: str, destination: str) -> Tuple[List[Dict[str, Any]], bool, str]:
     """
-    Returns (flights_list, is_degraded, fallback_note)
-    If exact origin+destination match exists, returns it.
-    If not, degrades gracefully to a representative hub route rather than returning empty.
+    Returns (flights_list, is_generic_fallback, reason)
+    1. Filters JSON by exact origin + destination match.
+    2. If no direct data exists for origin-destination, falls back to a representative proxy route (DEL-GOA or BOM-GOA),
+       adapts the returned objects to the requested origin/destination, and sets is_generic_fallback=True with explicit reason.
     """
     all_flights = load_json_file(FLIGHTS_FILE)
-    origin_clean = origin.upper().strip() if origin else "DEL"
+    orig_clean = origin.upper().strip() if origin else "DEL"
     dest_clean = destination.upper().strip() if destination else "GOA"
     
-    # 1. Exact match search
+    # 1. Exact match filter
     exact_matches = [
         f for f in all_flights
-        if f["origin"].upper() == origin_clean and f["destination"].upper() == dest_clean
+        if f["origin"].upper() == orig_clean and f["destination"].upper() == dest_clean
     ]
     if exact_matches:
         exact_matches.sort(key=lambda x: x["price_inr"])
         return exact_matches, False, ""
-    
-    # 2. Destination match search (e.g. any flight to GOA)
+
+    # 2. Destination match filter (e.g. any flight to GOA or DEL)
     dest_matches = [f for f in all_flights if f["destination"].upper() == dest_clean]
     if dest_matches:
         adapted_flights = []
         for f in dest_matches:
             item = dict(f)
-            item["origin"] = origin_clean
+            item["origin"] = orig_clean
             adapted_flights.append(item)
         adapted_flights.sort(key=lambda x: x["price_inr"])
-        note = f"Route {origin_clean}->{dest_clean} not explicitly seeded in mock DB; matched destination {dest_clean} using representative hub flights."
-        return adapted_flights, True, note
+        reason = f"No direct data for {orig_clean}-{dest_clean}, showing representative pricing for a comparable route"
+        return adapted_flights, True, reason
 
-    # 3. Universal Fallback: return default DEL->GOA set labeled for the requested route
-    default_flights = [f for f in all_flights if f["origin"] == "DEL" and f["destination"] == "GOA"]
-    if not default_flights:
-        default_flights = all_flights[:3]
-    
+    # 3. Proxy route fallback (default to DEL-GOA)
+    proxy_flights = [f for f in all_flights if f["origin"] == "DEL" and f["destination"] == "GOA"]
+    if not proxy_flights:
+        proxy_flights = all_flights[:3]
+
     adapted_flights = []
-    for f in default_flights:
+    for f in proxy_flights:
         item = dict(f)
-        item["origin"] = origin_clean
+        item["origin"] = orig_clean
         item["destination"] = dest_clean
         adapted_flights.append(item)
     
     adapted_flights.sort(key=lambda x: x["price_inr"])
-    note = f"Route {origin_clean}->{dest_clean} outside standard seed set; degraded gracefully to representative distance route pricing."
-    return adapted_flights, True, note
+    reason = f"No direct data for {orig_clean}-{dest_clean}, showing representative pricing for a comparable route"
+    return adapted_flights, True, reason
+
 
 def get_mock_hotels(destination: str) -> Tuple[List[Dict[str, Any]], bool, str]:
     """
-    Returns (hotels_list, is_degraded, fallback_note)
+    Returns (hotels_list, is_generic_fallback, reason)
+    1. Filters JSON by exact destination city match.
+    2. If no direct hotel data exists for destination, falls back to a proxy city (GOA), adapts the location area,
+       and sets is_generic_fallback=True with explicit reason.
     """
     all_hotels = load_json_file(HOTELS_FILE)
     dest_clean = destination.upper().strip() if destination else "GOA"
-    
-    # Check exact location match
-    matches = [h for h in all_hotels if dest_clean in h["location"].upper() or dest_clean in h["id"].upper()]
-    if matches:
-        matches.sort(key=lambda x: x["total_price_inr"])
-        return matches, False, ""
-    
-    # Fallback to GOA hotels adapted for requested city
-    default_hotels = [h for h in all_hotels if "GOA" in h["id"].upper()]
-    if not default_hotels:
-        default_hotels = all_hotels[:3]
-    
+
+    # 1. Exact match filter
+    exact_matches = [
+        h for h in all_hotels
+        if dest_clean in h.get("location_area", "").upper()
+        or dest_clean in h.get("location", "").upper()
+        or dest_clean in h.get("id", "").upper()
+    ]
+    if exact_matches:
+        exact_matches.sort(key=lambda x: x["total_price_inr"])
+        return exact_matches, False, ""
+
+    # 2. Fallback to GOA hotels adapted for requested destination
+    proxy_hotels = [h for h in all_hotels if "GOA" in h.get("id", "").upper()]
+    if not proxy_hotels:
+        proxy_hotels = all_hotels[:4]
+
     adapted_hotels = []
-    for h in default_hotels:
+    for h in proxy_hotels:
         item = dict(h)
-        item["location"] = f"Central {destination.title()}"
+        item["location_area"] = f"Central {dest_clean.title()}"
+        item["location"] = f"Central {dest_clean.title()}"
         adapted_hotels.append(item)
-    
+
     adapted_hotels.sort(key=lambda x: x["total_price_inr"])
-    note = f"Hotels for {dest_clean} unseeded; degraded gracefully to representative hotel accommodation rates."
-    return adapted_hotels, True, note
+    reason = f"No direct hotel data for {dest_clean}, showing representative pricing for a comparable city"
+    return adapted_hotels, True, reason
