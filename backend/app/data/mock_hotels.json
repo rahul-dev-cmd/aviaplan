@@ -1,0 +1,68 @@
+[
+  {
+    "id": "HT-GOA-1",
+    "name": "Zostel Goa (Calangute Beach)",
+    "location": "North Goa",
+    "rating": 4.5,
+    "price_per_night_inr": 1800,
+    "total_price_inr": 3600,
+    "nights": 2,
+    "amenities": ["Free Wi-Fi", "Beach Access", "Social Lounge", "Air Conditioning"],
+    "image_url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "HT-GOA-2",
+    "name": "Baga Beach Boutique Resort",
+    "location": "Baga, Goa",
+    "rating": 4.2,
+    "price_per_night_inr": 3200,
+    "total_price_inr": 6400,
+    "nights": 2,
+    "amenities": ["Swimming Pool", "Complimentary Breakfast", "Free Wi-Fi", "Cocktail Bar"],
+    "image_url": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "HT-GOA-3",
+    "name": "Taj Fort Aguada Resort & Spa",
+    "location": "Candolim, Goa",
+    "rating": 4.9,
+    "price_per_night_inr": 12500,
+    "total_price_inr": 25000,
+    "nights": 2,
+    "amenities": ["Infinity Pool", "Private Beach", "Luxury Spa", "Fine Dining"],
+    "image_url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "HT-BOM-1",
+    "name": "Ibis Mumbai Airport",
+    "location": "Vile Parle, Mumbai",
+    "rating": 4.1,
+    "price_per_night_inr": 3800,
+    "total_price_inr": 7600,
+    "nights": 2,
+    "amenities": ["Free Airport Shuttle", "24/7 Dining", "Wi-Fi"],
+    "image_url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "HT-DEL-1",
+    "name": "Bloomrooms @ Janpath",
+    "location": "Connaught Place, Delhi",
+    "rating": 4.3,
+    "price_per_night_inr": 2900,
+    "total_price_inr": 5800,
+    "nights": 2,
+    "amenities": ["Central Location", "Cloud Beds", "Breakfast"],
+    "image_url": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "HT-BLR-1",
+    "name": "The Paul Bangalore",
+    "location": "Indiranagar, Bangalore",
+    "rating": 4.6,
+    "price_per_night_inr": 4500,
+    "total_price_inr": 9000,
+    "nights": 2,
+    "amenities": ["Suites", "Irish Pub", "Fitness Center"],
+    "image_url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=600&q=80"
+  }
+]

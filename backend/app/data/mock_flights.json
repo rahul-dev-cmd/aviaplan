@@ -1,0 +1,134 @@
+[
+  {
+    "id": "FL-DEL-GOA-1",
+    "airline": "IndiGo",
+    "flight_number": "6E-2041",
+    "origin": "DEL",
+    "destination": "GOA",
+    "departure_time": "06:15",
+    "arrival_time": "08:45",
+    "duration": "2h 30m",
+    "price_inr": 4850
+  },
+  {
+    "id": "FL-DEL-GOA-2",
+    "airline": "Air India Express",
+    "flight_number": "IX-782",
+    "origin": "DEL",
+    "destination": "GOA",
+    "departure_time": "11:20",
+    "arrival_time": "13:55",
+    "duration": "2h 35m",
+    "price_inr": 6200
+  },
+  {
+    "id": "FL-DEL-GOA-3",
+    "airline": "Vistara",
+    "flight_number": "UK-845",
+    "origin": "DEL",
+    "destination": "GOA",
+    "departure_time": "18:00",
+    "arrival_time": "20:30",
+    "duration": "2h 30m",
+    "price_inr": 8900
+  },
+  {
+    "id": "FL-BOM-GOA-1",
+    "airline": "Akasa Air",
+    "flight_number": "QP-1102",
+    "origin": "BOM",
+    "destination": "GOA",
+    "departure_time": "07:30",
+    "arrival_time": "08:45",
+    "duration": "1h 15m",
+    "price_inr": 2900
+  },
+  {
+    "id": "FL-BOM-GOA-2",
+    "airline": "IndiGo",
+    "flight_number": "6E-5321",
+    "origin": "BOM",
+    "destination": "GOA",
+    "departure_time": "14:15",
+    "arrival_time": "15:30",
+    "duration": "1h 15m",
+    "price_inr": 4100
+  },
+  {
+    "id": "FL-BLR-GOA-1",
+    "airline": "Star Air",
+    "flight_number": "S5-114",
+    "origin": "BLR",
+    "destination": "GOA",
+    "departure_time": "08:10",
+    "arrival_time": "09:20",
+    "duration": "1h 10m",
+    "price_inr": 3100
+  },
+  {
+    "id": "FL-BLR-GOA-2",
+    "airline": "IndiGo",
+    "flight_number": "6E-344",
+    "origin": "BLR",
+    "destination": "GOA",
+    "departure_time": "16:45",
+    "arrival_time": "17:55",
+    "duration": "1h 10m",
+    "price_inr": 4750
+  },
+  {
+    "id": "FL-MAA-GOA-1",
+    "airline": "IndiGo",
+    "flight_number": "6E-618",
+    "origin": "MAA",
+    "destination": "GOA",
+    "departure_time": "09:00",
+    "arrival_time": "10:45",
+    "duration": "1h 45m",
+    "price_inr": 4200
+  },
+  {
+    "id": "FL-CCU-GOA-1",
+    "airline": "Air India Express",
+    "flight_number": "IX-992",
+    "origin": "CCU",
+    "destination": "GOA",
+    "departure_time": "05:45",
+    "arrival_time": "08:50",
+    "duration": "3h 05m",
+    "price_inr": 5800
+  },
+  {
+    "id": "FL-HYD-GOA-1",
+    "airline": "Alliance Air",
+    "flight_number": "9I-881",
+    "origin": "HYD",
+    "destination": "GOA",
+    "departure_time": "10:30",
+    "arrival_time": "11:55",
+    "duration": "1h 25m",
+    "price_inr": 3600
+  },
+  {
+    "id": "FL-DEL-BOM-1",
+    "airline": "IndiGo",
+    "flight_number": "6E-2112",
+    "origin": "DEL",
+    "destination": "BOM",
+    "departure_time": "07:00",
+    "arrival_time": "09:10",
+    "duration": "2h 10m",
+    "price_inr": 4500
+  },
+  {
+    "id": "FL-BLR-DEL-1",
+    "airline": "Vistara",
+    "flight_number": "UK-812",
+    "origin": "BLR",
+    "destination": "DEL",
+    "departure_time": "17:30",
+    "arrival_time": "20:15",
+    "duration": "2h 45m",
+    "price_inr": 5400
+  }
+]
