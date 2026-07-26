@@ -5,6 +5,7 @@ from typing import List, Dict, Any, Tuple
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 FLIGHTS_FILE = os.path.join(DATA_DIR, "mock_flights.json")
 HOTELS_FILE = os.path.join(DATA_DIR, "mock_hotels.json")
+ACTIVITIES_FILE = os.path.join(DATA_DIR, "mock_activities.json")
 
 def load_json_file(filepath: str) -> List[Dict[str, Any]]:
     if not os.path.exists(filepath):
@@ -97,3 +98,57 @@ def get_mock_hotels(destination: str) -> Tuple[List[Dict[str, Any]], bool, str]:
     adapted_hotels.sort(key=lambda x: x["total_price_inr"])
     reason = f"No direct hotel data for {dest_clean}, showing representative pricing for a comparable city"
     return adapted_hotels, True, reason
+
+
+def get_mock_activities(destination: str) -> Tuple[Dict[str, Any], bool, str]:
+    """
+    Returns (activities_dict, is_generic_fallback, reason)
+    1. Matches JSON entry by city_code or city_name.
+    2. If no direct match exists for destination, falls back to GOA activities adapted for destination,
+       setting is_generic_fallback=True with explicit reason.
+    """
+    all_activities = load_json_file(ACTIVITIES_FILE)
+    dest_clean = destination.upper().strip() if destination else "GOA"
+
+    # 1. Exact match by city_code or city_name
+    for act in all_activities:
+        code = act.get("city_code", "").upper()
+        name = act.get("city_name", "").upper()
+        if dest_clean == code or dest_clean == name or dest_clean in name:
+            return act, False, ""
+
+    # 2. Fallback to proxy city (default GOA or first entry)
+    proxy = None
+    for act in all_activities:
+        if act.get("city_code") == "GOA":
+            proxy = dict(act)
+            break
+    if not proxy and all_activities:
+        proxy = dict(all_activities[0])
+
+    if proxy:
+        adapted = dict(proxy)
+        adapted["city_code"] = dest_clean
+        adapted["city_name"] = dest_clean.title()
+        reason = f"No direct activities data for {dest_clean}, showing representative experiences for a comparable destination"
+        return adapted, True, reason
+
+    return {
+        "city_code": dest_clean,
+        "city_name": dest_clean.title(),
+        "attractions": [
+            {
+                "name": f"Central {dest_clean.title()} Sightseeing",
+                "category": "Culture",
+                "short_description": f"Explore popular landmark sights in {dest_clean.title()}."
+            }
+        ],
+        "food_recommendations": [
+            {
+                "name": f"Local {dest_clean.title()} Cuisine",
+                "cuisine_type": "Regional",
+                "short_description": f"Sample authentic regional dishes at top-rated local dining spots."
+            }
+        ]
+    }, True, f"No direct activities data for {dest_clean}"
+

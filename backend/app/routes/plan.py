@@ -48,6 +48,8 @@ async def plan_trip_endpoint(request: TripRequest):
                     "message": str(s)
                 })
 
+        activities = final_state.get("activities")
+
         return TripResponse(
             success=True,
             origin=final_state.get("origin", origin),
@@ -60,7 +62,10 @@ async def plan_trip_endpoint(request: TripRequest):
             selected_flight=selected_flight,
             selected_hotel=selected_hotel,
             weather_info=weather,
+            weather=weather,
+            activities=activities,
             summary=final_summary,
+            final_summary=final_summary,
             itinerary=final_state.get("itinerary", {}),
             action_logs=log_items,
             action_log=log_items

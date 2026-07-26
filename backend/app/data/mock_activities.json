@@ -1,0 +1,303 @@
+[
+  {
+    "city_code": "DEL",
+    "city_name": "Delhi",
+    "attractions": [
+      {
+        "name": "Qutub Minar Complex",
+        "category": "Historic",
+        "short_description": "Explore the UNESCO World Heritage soaring brick minaret and ancient ruined monuments."
+      },
+      {
+        "name": "Humayun's Tomb",
+        "category": "Historic",
+        "short_description": "Admire the precursor to the Taj Mahal with Mughal red sandstone architecture and lush gardens."
+      },
+      {
+        "name": "Lodhi Garden",
+        "category": "Nature",
+        "short_description": "Stroll through serene landscaped lawns dotted with 15th-century tomb structures."
+      },
+      {
+        "name": "Chandni Chowk Heritage Walk",
+        "category": "Culture",
+        "short_description": "Experience bustling heritage bazaars and vibrant street atmosphere in Old Delhi."
+      }
+    ],
+    "food_recommendations": [
+      {
+        "name": "Karim's Old Delhi",
+        "cuisine_type": "Mughlai",
+        "short_description": "Legendary historic dining spot renowned for authentic mutton kebabs and rich curries."
+      },
+      {
+        "name": "Indian Accent",
+        "cuisine_type": "Modern Indian",
+        "short_description": "Critically acclaimed fine dining showcasing inventive twists on classic Indian dishes."
+      },
+      {
+        "name": "Paranthe Wali Gali",
+        "cuisine_type": "Street Food",
+        "short_description": "Iconic narrow alley serving stuffed deep-fried parathas with tangy chutneys."
+      }
+    ]
+  },
+  {
+    "city_code": "BOM",
+    "city_name": "Mumbai",
+    "attractions": [
+      {
+        "name": "Gateway of India",
+        "category": "Historic",
+        "short_description": "Stand before Mumbai's landmark waterfront arch overlooking the Arabian Sea."
+      },
+      {
+        "name": "Marine Drive Promenade",
+        "category": "Nature",
+        "short_description": "Enjoy scenic sunset walks along the famous C-shaped Queen's Necklace shoreline."
+      },
+      {
+        "name": "Elephanta Caves",
+        "category": "Historic",
+        "short_description": "Take a ferry to island rock-cut cave temples dedicated to Lord Shiva."
+      },
+      {
+        "name": "Sanjay Gandhi National Park",
+        "category": "Adventure",
+        "short_description": "Cycle through dense urban forest trails leading to ancient Kanheri Caves."
+      }
+    ],
+    "food_recommendations": [
+      {
+        "name": "Britannia & Co.",
+        "cuisine_type": "Parsi",
+        "short_description": "Charming vintage cafe serving signature Berry Pulav and Dhansak."
+      },
+      {
+        "name": "Trishna",
+        "cuisine_type": "Seafood",
+        "short_description": "Celebrated seafood institution famous for butter garlic crab and coastal fare."
+      },
+      {
+        "name": "Bademiya",
+        "cuisine_type": "Street Food",
+        "short_description": "Late-night open-air grill serving succulent chicken tikka and seekh rolls."
+      }
+    ]
+  },
+  {
+    "city_code": "BLR",
+    "city_name": "Bengaluru",
+    "attractions": [
+      {
+        "name": "Lalbagh Botanical Garden",
+        "category": "Nature",
+        "short_description": "Wander among centuries-old tropical trees and a glasshouse modelled on Crystal Palace."
+      },
+      {
+        "name": "Bengaluru Palace",
+        "category": "Historic",
+        "short_description": "Tour Tudor-style royal grounds complete with fortified towers and regal memorabilia."
+      },
+      {
+        "name": "Cubbon Park",
+        "category": "Nature",
+        "short_description": "Relax in 300 acres of lush greenery at the heart of the Garden City."
+      },
+      {
+        "name": "Commercial Street",
+        "category": "Shopping",
+        "short_description": "Browse vibrant shopping lanes offering silk sarees, handicraft curios, and apparel."
+      }
+    ],
+    "food_recommendations": [
+      {
+        "name": "Vidyarthi Bhavan",
+        "cuisine_type": "South Indian",
+        "short_description": "Heritage eatery famous for crispy butter masala dosas and filter coffee."
+      },
+      {
+        "name": "Toit Brewpub",
+        "cuisine_type": "Craft Beer & Pub Fare",
+        "short_description": "Popular Indiranagar microbrewery serving fresh artisan brews and wood-fired pizzas."
+      },
+      {
+        "name": "CTR Shri Sagar",
+        "cuisine_type": "South Indian",
+        "short_description": "Iconic Malleshwaram spot renowned for Benne Masala Dosa."
+      }
+    ]
+  },
+  {
+    "city_code": "MAA",
+    "city_name": "Chennai",
+    "attractions": [
+      {
+        "name": "Kapaleeshwarar Temple",
+        "category": "Historic",
+        "short_description": "Marvel at Dravidian temple architecture and intricate colorful gopuram towers."
+      },
+      {
+        "name": "Marina Beach",
+        "category": "Nature",
+        "short_description": "Walk along one of the world's longest urban sandy beaches at sunset."
+      },
+      {
+        "name": "Fort St. George Museum",
+        "category": "Historic",
+        "short_description": "Explore 17th-century British colonial military artifacts and oil paintings."
+      },
+      {
+        "name": "DakshinaChitra Heritage Village",
+        "category": "Culture",
+        "short_description": "Experience living heritage craft workshops representing traditional South Indian homes."
+      }
+    ],
+    "food_recommendations": [
+      {
+        "name": "Murugan Idli Shop",
+        "cuisine_type": "South Indian",
+        "short_description": "Famous for soft fluffy idlis served with a quartet of signature chutneys."
+      },
+      {
+        "name": "Saravana Bhavan",
+        "cuisine_type": "Vegetarian",
+        "short_description": "Global vegetarian staple serving wholesome thalis and ghee roast dosas."
+      },
+      {
+        "name": "Dakshin",
+        "cuisine_type": "Coastal Indian",
+        "short_description": "Fine dining restaurant featuring authentic South Indian coastal delicacies."
+      }
+    ]
+  },
+  {
+    "city_code": "CCU",
+    "city_name": "Kolkata",
+    "attractions": [
+      {
+        "name": "Victoria Memorial Hall",
+        "category": "Historic",
+        "short_description": "Admire majestic white marble colonial monument surrounded by sprawling garden pools."
+      },
+      {
+        "name": "Howrah Bridge",
+        "category": "Historic",
+        "short_description": "Cross the iconic cantilever bridge over the Hooghly River bustling with daily life."
+      },
+      {
+        "name": "Indian Museum",
+        "category": "Culture",
+        "short_description": "Discover Asia's oldest multi-disciplinary museum housing rare ancient relics."
+      },
+      {
+        "name": "Dakshineswar Kali Temple",
+        "category": "Historic",
+        "short_description": "Visit sacred riverbank temple complex associated with Sri Ramakrishna Paramahamsa."
+      }
+    ],
+    "food_recommendations": [
+      {
+        "name": "Peter Cat",
+        "cuisine_type": "Continental",
+        "short_description": "Legendary Park Street destination world-renowned for Cheelo Kebab."
+      },
+      {
+        "name": "Arsalan",
+        "cuisine_type": "Mughlai",
+        "short_description": "Famous Kolkata biryani spot serving aromatic rice cooked with potato and tender meat."
+      },
+      {
+        "name": "Nizam's",
+        "cuisine_type": "Street Food",
+        "short_description": "Historical birth place of authentic Kolkata Kathi Rolls."
+      }
+    ]
+  },
+  {
+    "city_code": "HYD",
+    "city_name": "Hyderabad",
+    "attractions": [
+      {
+        "name": "Charminar & Laad Bazaar",
+        "category": "Historic",
+        "short_description": "Stand beneath the 16th-century four-minaret monument and shop for traditional bangles."
+      },
+      {
+        "name": "Golconda Fort",
+        "category": "Historic",
+        "short_description": "Climb fortress acoustic halls and watch the evening light-and-sound show."
+      },
+      {
+        "name": "Salar Jung Museum",
+        "category": "Culture",
+        "short_description": "Inspect one of the world's largest one-man art collection treasures."
+      },
+      {
+        "name": "Hussain Sagar Lake Promenade",
+        "category": "Nature",
+        "short_description": "Enjoy boat rides around the monolith Buddha statue standing amidst the lake."
+      }
+    ],
+    "food_recommendations": [
+      {
+        "name": "Paradise Biryani",
+        "cuisine_type": "Hyderabadi",
+        "short_description": "World-famous institution serving authentic dum biryani flavored with saffron."
+      },
+      {
+        "name": "Shah Ghouse",
+        "cuisine_type": "Mughlai",
+        "short_description": "Popular local haunt known for rich Haleem and spicy kebabs."
+      },
+      {
+        "name": "Famous Ice Cream",
+        "cuisine_type": "Dessert",
+        "short_description": "Heritage Mozamjahi Market shop crafting hand-churned fruit ice creams."
+      }
+    ]
+  },
+  {
+    "city_code": "GOA",
+    "city_name": "Goa",
+    "attractions": [
+      {
+        "name": "Basilica of Bom Jesus",
+        "category": "Historic",
+        "short_description": "Visit UNESCO-listed Baroque church holding the mortal remains of St. Francis Xavier."
+      },
+      {
+        "name": "Calangute & Baga Beach Walk",
+        "category": "Nature",
+        "short_description": "Soak in coastal ocean breezes and vibrant shacks along North Goa's famous coastline."
+      },
+      {
+        "name": "Dudhsagar Waterfalls Trip",
+        "category": "Adventure",
+        "short_description": "Trek or jeep safari to four-tiered white water cascading down Western Ghats."
+      },
+      {
+        "name": "Fort Aguada",
+        "category": "Historic",
+        "short_description": "Explore 17th-century Portuguese lighthouse and fort guarding Sinquerim beach."
+      }
+    ],
+    "food_recommendations": [
+      {
+        "name": "Fisherman's Wharf",
+        "cuisine_type": "Goan Seafood",
+        "short_description": "Riverside restaurant offering authentic Goan Fish Curry Rice and Prawn Balchão."
+      },
+      {
+        "name": "Thalassa",
+        "cuisine_type": "Coastal Greek",
+        "short_description": "Cliffside dining spot famous for sunset views and Mediterranean grilled dishes."
+      },
+      {
+        "name": "Martin's Corner",
+        "cuisine_type": "Traditional Goan",
+        "short_description": "Celebrated South Goa culinary staple specializing in Pork Vindaloo and Crab Xacuti."
+      }
+    ]
+  }
+]

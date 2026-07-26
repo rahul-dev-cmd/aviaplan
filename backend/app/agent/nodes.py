@@ -1,7 +1,7 @@
 from datetime import datetime
 import httpx
 from app.agent.state import AgentState
-from app.services.tool_wrapper import get_flights, get_hotels
+from app.services.tool_wrapper import get_flights, get_hotels, get_activities
 
 CITY_COORDINATES = {
     "DEL": {"lat": 28.6139, "lon": 77.2090, "name": "New Delhi"},
@@ -248,6 +248,47 @@ async def weather_node(state: AgentState) -> AgentState:
     }
 
 
+async def activities_node(state: AgentState) -> AgentState:
+    """
+    Retrieves curated local attractions and food recommendations for the destination.
+
+    Why: Queries `get_activities` from tool_wrapper to populate the `activities` state 
+    field with city highlights and appends a log entry summarizing available activities.
+    """
+    destination = state.get("destination", "")
+
+    activities_data, is_fallback, note = await get_activities(destination)
+
+    action_log = list(state.get("action_log") or [])
+    action_logs = list(state.get("action_logs") or [])
+    timestamp = get_timestamp()
+    ts_short = get_short_timestamp()
+
+    attractions = activities_data.get("attractions", [])
+    food = activities_data.get("food_recommendations", [])
+    n = len(attractions) + len(food)
+
+    if is_fallback and note:
+        msg = note
+    else:
+        msg = f"Found {n} things to do in {destination}"
+
+    action_log.append(f"[{timestamp}] {msg}")
+    action_logs.append({
+        "timestamp": ts_short,
+        "node": "activities",
+        "status": "FALLBACK" if is_fallback else "SUCCESS",
+        "message": msg
+    })
+
+    return {
+        **state,
+        "activities": activities_data,
+        "action_log": action_log,
+        "action_logs": action_logs
+    }
+
+
 async def budget_check_node(state: AgentState) -> AgentState:
     """
     Evaluates combinations of flights and hotels sorted by price to optimize budget allocation.
@@ -383,8 +424,8 @@ async def synthesizer_node(state: AgentState) -> AgentState:
     """
     Synthesizes the overall trip recommendation into a clean plain-English summary.
 
-    Why: Combines selected flight, hotel, budget breakdown, weather outlook, and data 
-    provenance into a 3-4 sentence paragraph. Finalizes the action_log with 'Trip plan finalized'.
+    Why: Combines selected flight, hotel, budget breakdown, weather outlook, activity 
+    highlights, and data provenance into a 3-4 sentence paragraph. Finalizes the action_log.
     """
     origin = state.get("origin", "")
     destination = state.get("destination", "")
@@ -394,6 +435,7 @@ async def synthesizer_node(state: AgentState) -> AgentState:
     selected_flight = state.get("selected_flight") or {}
     selected_hotel = state.get("selected_hotel") or {}
     weather = state.get("weather")
+    activities = state.get("activities") or {}
     flight_source = state.get("flight_source", "cached")
     hotel_source = state.get("hotel_source", "cached")
 
@@ -417,9 +459,21 @@ async def synthesizer_node(state: AgentState) -> AgentState:
     else:
         sentence3 = f"No weather forecast was available for {destination} during planning."
 
+    # Mention 1-2 activity highlights
+    attractions = activities.get("attractions", [])
+    food_recs = activities.get("food_recommendations", [])
+    activity_highlights = ""
+    if attractions or food_recs:
+        parts = []
+        if attractions:
+            parts.append(f"visiting {attractions[0]['name']}")
+        if food_recs:
+            parts.append(f"dining at {food_recs[0]['name']}")
+        activity_highlights = f" Recommended experiences include {' and '.join(parts)}."
+
     sentence4 = f"Flight information was obtained via {flight_source} data, and hotel information via {hotel_source} data."
 
-    final_summary = f"{sentence1} {sentence2} {sentence3} {sentence4}"
+    final_summary = f"{sentence1} {sentence2} {sentence3}{activity_highlights} {sentence4}"
 
     final_msg = "Trip plan finalized"
     action_log.append(f"[{timestamp}] {final_msg}")
@@ -438,16 +492,20 @@ async def synthesizer_node(state: AgentState) -> AgentState:
         "flight": selected_flight,
         "hotel": selected_hotel,
         "weather": weather,
+        "activities": activities,
         "schedule": [
             {
                 "day": "Day 1",
-                "title": "Arrival",
+                "title": "Arrival & Check-in",
                 "activities": [f"Board flight {flight_name}", f"Check in at {hotel_name}"]
             },
             {
                 "day": "Day 2",
-                "title": "Exploration",
-                "activities": ["Sightseeing and local dining"]
+                "title": "Exploration & Local Sights",
+                "activities": [
+                    attractions[0]['name'] if attractions else "City Sightseeing",
+                    f"Sample local cuisine at {food_recs[0]['name']}" if food_recs else "Local dining"
+                ]
             }
         ]
     }
@@ -460,3 +518,4 @@ async def synthesizer_node(state: AgentState) -> AgentState:
         "action_log": action_log,
         "action_logs": action_logs
     }
+

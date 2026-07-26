@@ -12,6 +12,7 @@ class AgentState(TypedDict, total=False):
     hotel_source: str
     hotel_log_note: str | None
     weather: dict | None
+    activities: dict | None
     selected_flight: dict | None
     selected_hotel: dict | None
     total_cost: int | None

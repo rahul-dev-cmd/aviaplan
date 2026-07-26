@@ -68,7 +68,11 @@ class TripResponse(BaseModel):
     selected_flight: Optional[FlightOption] = None
     selected_hotel: Optional[HotelOption] = None
     weather_info: Optional[WeatherInfo] = None
+    weather: Optional[WeatherInfo] = None
+    activities: Optional[Dict[str, Any]] = None
     summary: str
+    final_summary: Optional[str] = None
     itinerary: Dict[str, Any] = {}
     action_logs: List[ActionLogItem] = []
     action_log: List[ActionLogItem] = []
+

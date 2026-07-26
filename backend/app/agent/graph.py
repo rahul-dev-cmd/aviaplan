@@ -5,6 +5,7 @@ from app.agent.nodes import (
     flight_search_node,
     hotel_search_node,
     weather_node,
+    activities_node,
     budget_check_node,
     synthesizer_node
 )
@@ -15,7 +16,7 @@ def create_trip_planner_graph():
 
     Sequence:
     planner_node → flight_search_node → hotel_search_node → weather_node →
-    budget_check_node → synthesizer_node → END
+    activities_node → budget_check_node → synthesizer_node → END
     """
     workflow = StateGraph(AgentState)
 
@@ -24,6 +25,7 @@ def create_trip_planner_graph():
     workflow.add_node("flight_search", flight_search_node)
     workflow.add_node("hotel_search", hotel_search_node)
     workflow.add_node("weather", weather_node)
+    workflow.add_node("activities", activities_node)
     workflow.add_node("budget_check", budget_check_node)
     workflow.add_node("synthesizer", synthesizer_node)
 
@@ -32,7 +34,8 @@ def create_trip_planner_graph():
     workflow.add_edge("planner", "flight_search")
     workflow.add_edge("flight_search", "hotel_search")
     workflow.add_edge("hotel_search", "weather")
-    workflow.add_edge("weather", "budget_check")
+    workflow.add_edge("weather", "activities")
+    workflow.add_edge("activities", "budget_check")
     workflow.add_edge("budget_check", "synthesizer")
     workflow.add_edge("synthesizer", END)
 
@@ -74,6 +77,7 @@ async def run_trip_planner(
         "hotel_source": "",
         "hotel_log_note": None,
         "weather": None,
+        "activities": None,
         "selected_flight": None,
         "selected_hotel": None,
         "total_cost": None,

@@ -3,7 +3,7 @@ from typing import Tuple, List, Dict, Any, Optional
 from app.services.flight_api import fetch_live_flights
 from app.services.hotel_api import fetch_live_hotels
 from app.services.weather_api import fetch_weather_forecast
-from app.services.mock_data import get_mock_flights, get_mock_hotels
+from app.services.mock_data import get_mock_flights, get_mock_hotels, get_mock_activities
 
 def get_timestamp() -> str:
     return datetime.now().strftime("%H:%M:%S")
@@ -55,6 +55,14 @@ async def get_hotels(destination: str) -> Tuple[List[Dict[str, Any]], str, Optio
 
     log_note = note if (is_degraded and note) else f"Retrieved {len(mock_hotels)} hotel options from local cache"
     return mock_hotels, "cached", log_note
+
+async def get_activities(destination: str) -> Tuple[Dict[str, Any], bool, str]:
+    """
+    Retrieves curated attractions and food recommendations for destination.
+    Returns (activities_data, is_fallback, note).
+    """
+    return get_mock_activities(destination)
+
 
 
 async def execute_flight_search_tool(origin: str, destination: str, date: str) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:

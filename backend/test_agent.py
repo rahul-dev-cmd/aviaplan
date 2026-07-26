@@ -28,13 +28,17 @@ async def test_agent_execution():
     flight = result.get("selected_flight")
     hotel = result.get("selected_hotel")
     weather = result.get("weather_info")
+    activities = result.get("activities")
     
     assert flight is not None, "Flight selection failed!"
     assert hotel is not None, "Hotel selection failed!"
     assert weather is not None, "Weather lookup failed!"
+    assert activities is not None, "Activities lookup failed!"
     print(f"   [SUCCESS] Selected Flight: {flight['airline']} ({flight['flight_number']}) - ₹{flight['price_inr']}")
     print(f"   [SUCCESS] Selected Hotel: {hotel['name']} - Total ₹{hotel['total_price_inr']}")
     print(f"   [SUCCESS] Weather City: {weather['city']} ({len(weather['forecast'])} days forecast)")
+    print(f"   [SUCCESS] Activities: {len(activities.get('attractions', []))} attractions, {len(activities.get('food_recommendations', []))} food spots")
+
 
     print("\n3. Verifying Budget Calculation...")
     total_cost = result.get("total_cost", 0)
