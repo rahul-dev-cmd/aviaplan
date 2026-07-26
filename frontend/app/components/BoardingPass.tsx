@@ -1,8 +1,22 @@
 "use client";
 
-import React from "react";
-import { TripResponse } from "@/lib/api";
-import { Plane, Calendar, Hotel, Sun, CloudRain, CheckCircle, AlertCircle, ShieldCheck, Ticket } from "lucide-react";
+import React, { useState } from "react";
+import { TripResponse } from "../../lib/api";
+import ThingsToDo from "./ThingsToDo";
+import {
+  Plane,
+  Calendar,
+  Hotel,
+  Sun,
+  CheckCircle,
+  AlertCircle,
+  ShieldCheck,
+  Ticket,
+  Loader2,
+  Mail,
+  X,
+  ExternalLink
+} from "lucide-react";
 
 interface BoardingPassProps {
   data: TripResponse;
@@ -11,8 +25,44 @@ interface BoardingPassProps {
 export default function BoardingPass({ data }: BoardingPassProps) {
   const flight = data.selected_flight;
   const hotel = data.selected_hotel;
-  const weather = data.weather_info;
+  const weather = data.weather_info || data.weather;
   const itinerary = data.itinerary || {};
+  const activities = data.activities;
+
+  // Booking Flow States
+  const [bookingFlight, setBookingFlight] = useState<"idle" | "loading" | "confirmed">("idle");
+  const [flightRef, setFlightRef] = useState<string>("");
+
+  const [bookingHotel, setBookingHotel] = useState<"idle" | "loading" | "confirmed">("idle");
+  const [hotelRef, setHotelRef] = useState<string>("");
+
+  // Confirmation Modal State
+  const [confirmationModal, setConfirmationModal] = useState<{
+    open: boolean;
+    type: "flight" | "hotel";
+    reference: string;
+  } | null>(null);
+
+  const generateRefCode = () => {
+    const rand4 = Math.floor(1000 + Math.random() * 9000);
+    return `AVIA-${data.origin}-${data.destination}-${rand4}`;
+  };
+
+  const handleBookFlight = async () => {
+    setBookingFlight("loading");
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    const ref = generateRefCode();
+    setFlightRef(ref);
+    setBookingFlight("confirmed");
+  };
+
+  const handleBookHotel = async () => {
+    setBookingHotel("loading");
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    const ref = generateRefCode();
+    setHotelRef(ref);
+    setBookingHotel("confirmed");
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
@@ -68,28 +118,110 @@ export default function BoardingPass({ data }: BoardingPassProps) {
             {/* Flight & Hotel Grid Details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Flight Box */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  <span className="flex items-center gap-1.5"><Plane className="w-4 h-4 text-airline-sky" /> Flight Segment</span>
-                  <span className="text-emerald-700 font-mono">₹{flight?.price_inr?.toLocaleString() || 0}</span>
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <span className="flex items-center gap-1.5"><Plane className="w-4 h-4 text-airline-sky" /> Flight Segment</span>
+                    <span className="text-emerald-700 font-mono">₹{flight?.price_inr?.toLocaleString() || 0}</span>
+                  </div>
+                  <div className="text-xs space-y-1 text-slate-600 font-medium">
+                    <p><span className="font-semibold text-slate-900">Carrier:</span> {flight?.airline} ({flight?.flight_number})</p>
+                    <p><span className="font-semibold text-slate-900">Schedule:</span> {flight?.departure_time} - {flight?.arrival_time}</p>
+                    <p><span className="font-semibold text-slate-900">Data Provider:</span> {flight?.source_label}</p>
+                  </div>
                 </div>
-                <div className="text-xs space-y-1 text-slate-600 font-medium">
-                  <p><span className="font-semibold text-slate-900">Carrier:</span> {flight?.airline} ({flight?.flight_number})</p>
-                  <p><span className="font-semibold text-slate-900">Schedule:</span> {flight?.departure_time} - {flight?.arrival_time}</p>
-                  <p><span className="font-semibold text-slate-900">Data Provider:</span> {flight?.source_label}</p>
+
+                {/* Flight Booking Button / Confirmation State */}
+                <div className="pt-2 border-t border-slate-200">
+                  {bookingFlight === "idle" && (
+                    <button
+                      onClick={handleBookFlight}
+                      className="w-full py-2 px-3 bg-airline-sky hover:bg-sky-700 text-white font-bold text-xs rounded-lg transition shadow flex items-center justify-center space-x-1.5"
+                    >
+                      <Ticket className="w-3.5 h-3.5" />
+                      <span>Book Flight Now</span>
+                    </button>
+                  )}
+
+                  {bookingFlight === "loading" && (
+                    <div className="w-full py-2 px-3 bg-sky-50 border border-sky-200 text-sky-700 font-bold text-xs rounded-lg flex items-center justify-center space-x-2">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Processing Flight Booking...</span>
+                    </div>
+                  )}
+
+                  {bookingFlight === "confirmed" && (
+                    <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800">
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Booking Confirmed
+                        </span>
+                        <button
+                          onClick={() => setConfirmationModal({ open: true, type: "flight", reference: flightRef })}
+                          className="text-[10px] font-bold text-airline-sky hover:underline flex items-center gap-0.5"
+                        >
+                          <Mail className="w-3 h-3" /> View confirmation
+                        </button>
+                      </div>
+                      <span className="text-[10px] font-mono text-emerald-900 block font-semibold">
+                        Ref: {flightRef}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Hotel Box */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  <span className="flex items-center gap-1.5"><Hotel className="w-4 h-4 text-airline-orange" /> Hotel Stay</span>
-                  <span className="text-emerald-700 font-mono">₹{hotel?.total_price_inr?.toLocaleString() || 0}</span>
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <span className="flex items-center gap-1.5"><Hotel className="w-4 h-4 text-airline-orange" /> Hotel Stay</span>
+                    <span className="text-emerald-700 font-mono">₹{hotel?.total_price_inr?.toLocaleString() || 0}</span>
+                  </div>
+                  <div className="text-xs space-y-1 text-slate-600 font-medium">
+                    <p><span className="font-semibold text-slate-900">Property:</span> {hotel?.name}</p>
+                    <p><span className="font-semibold text-slate-900">Location:</span> {hotel?.location} ({hotel?.rating}★)</p>
+                    <p><span className="font-semibold text-slate-900">Data Provider:</span> {hotel?.source_label}</p>
+                  </div>
                 </div>
-                <div className="text-xs space-y-1 text-slate-600 font-medium">
-                  <p><span className="font-semibold text-slate-900">Property:</span> {hotel?.name}</p>
-                  <p><span className="font-semibold text-slate-900">Location:</span> {hotel?.location} ({hotel?.rating}★)</p>
-                  <p><span className="font-semibold text-slate-900">Data Provider:</span> {hotel?.source_label}</p>
+
+                {/* Hotel Booking Button / Confirmation State */}
+                <div className="pt-2 border-t border-slate-200">
+                  {bookingHotel === "idle" && (
+                    <button
+                      onClick={handleBookHotel}
+                      className="w-full py-2 px-3 bg-airline-orange hover:bg-orange-700 text-white font-bold text-xs rounded-lg transition shadow flex items-center justify-center space-x-1.5"
+                    >
+                      <Hotel className="w-3.5 h-3.5" />
+                      <span>Book Hotel Now</span>
+                    </button>
+                  )}
+
+                  {bookingHotel === "loading" && (
+                    <div className="w-full py-2 px-3 bg-orange-50 border border-orange-200 text-orange-700 font-bold text-xs rounded-lg flex items-center justify-center space-x-2">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Processing Hotel Booking...</span>
+                    </div>
+                  )}
+
+                  {bookingHotel === "confirmed" && (
+                    <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800">
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Booking Confirmed
+                        </span>
+                        <button
+                          onClick={() => setConfirmationModal({ open: true, type: "hotel", reference: hotelRef })}
+                          className="text-[10px] font-bold text-airline-sky hover:underline flex items-center gap-0.5"
+                        >
+                          <Mail className="w-3 h-3" /> View confirmation
+                        </button>
+                      </div>
+                      <span className="text-[10px] font-mono text-emerald-900 block font-semibold">
+                        Ref: {hotelRef}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -113,10 +245,13 @@ export default function BoardingPass({ data }: BoardingPassProps) {
               </div>
             )}
 
+            {/* Things To Do Card (Rendered between Weather card and AI Summary) */}
+            <ThingsToDo activities={activities} />
+
             {/* Agent Summary Note */}
             <div className="bg-cream-50 p-4 rounded-xl border border-cream-200 text-xs text-slate-700 leading-relaxed font-sans">
               <span className="font-bold text-slate-900 block mb-1">AI Executive Travel Summary:</span>
-              {data.summary}
+              {data.final_summary || data.summary}
             </div>
 
           </div>
@@ -130,13 +265,13 @@ export default function BoardingPass({ data }: BoardingPassProps) {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-extrabold uppercase text-slate-400 tracking-wider">BOARDING STUB</span>
-                {data.is_within_budget ? (
+                {(data.budget_status === "within_budget" || data.is_within_budget) ? (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
                     <CheckCircle className="w-3 h-3 text-emerald-600" /> WITHIN BUDGET
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-300">
-                    <AlertCircle className="w-3 h-3 text-orange-600" /> BEST ATTEMPT
+                    <AlertCircle className="w-3 h-3 text-orange-600" /> OVER BUDGET
                   </span>
                 )}
               </div>
@@ -145,7 +280,7 @@ export default function BoardingPass({ data }: BoardingPassProps) {
               <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
                 <div className="flex justify-between items-center text-xs text-slate-600">
                   <span>Target Budget:</span>
-                  <span className="font-semibold text-slate-900">₹{data.max_budget?.toLocaleString()}</span>
+                  <span className="font-semibold text-slate-900">₹{(data.budget_inr || data.max_budget)?.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center text-xs text-slate-600">
                   <span>Flight Ticket:</span>
@@ -210,6 +345,82 @@ export default function BoardingPass({ data }: BoardingPassProps) {
                 </ul>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Email Preview Modal */}
+      {confirmationModal?.open && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            {/* Modal Header */}
+            <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Mail className="w-5 h-5 text-airline-orange" />
+                <span className="font-bold text-sm">Mock Confirmation Email Preview</span>
+              </div>
+              <button
+                onClick={() => setConfirmationModal(null)}
+                className="text-slate-400 hover:text-white transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Email Metadata Header */}
+            <div className="bg-slate-50 border-b border-slate-200 p-4 text-xs space-y-1.5 text-slate-600 font-mono">
+              <p><span className="font-bold text-slate-800">From:</span> bookings@aviaplan.app</p>
+              <p><span className="font-bold text-slate-800">To:</span> traveler@aviaplan.app</p>
+              <p><span className="font-bold text-slate-800">Subject:</span> Your booking is confirmed — {confirmationModal.reference}</p>
+            </div>
+
+            {/* Email Body Content */}
+            <div className="p-6 text-xs text-slate-700 space-y-3 leading-relaxed">
+              <div className="flex items-center gap-2 text-emerald-700 font-bold">
+                <CheckCircle className="w-4 h-4" />
+                <span>Reservation Verified & Confirmed</span>
+              </div>
+
+              {confirmationModal.type === "flight" ? (
+                <div className="space-y-2 bg-cream-50 p-4 rounded-xl border border-cream-200">
+                  <p className="font-medium text-slate-800">
+                    Thank you for booking with AviaPlan! Your flight reservation from <strong className="text-slate-900">{data.origin}</strong> to <strong className="text-slate-900">{data.destination}</strong> has been successfully issued.
+                  </p>
+                  <ul className="space-y-1 list-disc list-inside text-slate-600 pt-1 font-sans">
+                    <li><strong>Flight:</strong> {flight?.airline} ({flight?.flight_number || "AV-701"})</li>
+                    <li><strong>Schedule:</strong> {flight?.departure_time} - {flight?.arrival_time} ({flight?.duration})</li>
+                    <li><strong>Amount Paid:</strong> ₹{flight?.price_inr?.toLocaleString()}</li>
+                    <li><strong>Booking Reference:</strong> <span className="font-mono text-emerald-800 font-bold">{confirmationModal.reference}</span></li>
+                  </ul>
+                </div>
+              ) : (
+                <div className="space-y-2 bg-cream-50 p-4 rounded-xl border border-cream-200">
+                  <p className="font-medium text-slate-800">
+                    Thank you for booking with AviaPlan! Your hotel stay at <strong className="text-slate-900">{hotel?.name}</strong> in <strong className="text-slate-900">{data.destination}</strong> has been successfully reserved.
+                  </p>
+                  <ul className="space-y-1 list-disc list-inside text-slate-600 pt-1 font-sans">
+                    <li><strong>Property:</strong> {hotel?.name} ({hotel?.location})</li>
+                    <li><strong>Duration:</strong> 2 Nights Stay ({hotel?.rating}★)</li>
+                    <li><strong>Amount Paid:</strong> ₹{hotel?.total_price_inr?.toLocaleString()}</li>
+                    <li><strong>Booking Reference:</strong> <span className="font-mono text-emerald-800 font-bold">{confirmationModal.reference}</span></li>
+                  </ul>
+                </div>
+              )}
+
+              <p className="text-[11px] text-slate-500 pt-2 italic">
+                This simulated email preview demonstrates instant booking confirmation. Present your reference code at check-in or airport gates.
+              </p>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-slate-50 px-6 py-3 border-t border-slate-200 flex justify-end">
+              <button
+                onClick={() => setConfirmationModal(null)}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-lg transition"
+              >
+                Close Preview
+              </button>
+            </div>
           </div>
         </div>
       )}

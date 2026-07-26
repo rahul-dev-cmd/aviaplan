@@ -1,18 +1,28 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plane, Compass, Sparkles, IndianRupee, MapPin } from "lucide-react";
+import { Plane, Compass, Sparkles, IndianRupee, MapPin, ChevronDown, AlertCircle } from "lucide-react";
 
 interface TripFormProps {
   onSubmit: (data: { query: string; origin?: string; destination?: string; max_budget?: number }) => void;
   isLoading: boolean;
 }
 
+const CITIES = [
+  { name: "Delhi", code: "DEL" },
+  { name: "Mumbai", code: "BOM" },
+  { name: "Bangalore", code: "BLR" },
+  { name: "Chennai", code: "MAA" },
+  { name: "Kolkata", code: "CCU" },
+  { name: "Hyderabad", code: "HYD" },
+  { name: "Goa", code: "GOA" },
+];
+
 export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
-  const [query, setQuery] = useState("Plan a weekend trip to Goa under ₹15,000, leaving Friday");
-  const [origin, setOrigin] = useState("DEL");
-  const [destination, setDestination] = useState("GOA");
-  const [budget, setBudget] = useState("15000");
+  const [query, setQuery] = useState("");
+  const [origin, setOrigin] = useState("");
+  const [destination, setDestination] = useState("");
+  const [budget, setBudget] = useState("");
 
   const presetQueries = [
     { label: "🌴 Weekend in Goa under ₹15k", query: "Plan a weekend trip to Goa under ₹15,000, leaving Friday", origin: "DEL", dest: "GOA", b: "15000" },
@@ -20,11 +30,31 @@ export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
     { label: "💼 Bangalore to Delhi Budget", query: "Fly from Bangalore to Delhi under ₹12,000", origin: "BLR", dest: "DEL", b: "12000" }
   ];
 
+  const handleOriginChange = (selectedOrigin: string) => {
+    setOrigin(selectedOrigin);
+    if (selectedOrigin && selectedOrigin === destination) {
+      setDestination("");
+    }
+  };
+
+  const handleDestinationChange = (selectedDest: string) => {
+    setDestination(selectedDest);
+    if (selectedDest && selectedDest === origin) {
+      setOrigin("");
+    }
+  };
+
+  const isSameCity = Boolean(origin && destination && origin === destination);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
+    if (isSameCity) return;
+
+    const trimmedQuery = query.trim();
+    const finalQuery = trimmedQuery || (origin && destination ? `Fly from ${origin} to ${destination}${budget ? ' with budget ₹' + budget : ''}` : "Plan a flight trip");
+    
     onSubmit({
-      query: query.trim(),
+      query: finalQuery,
       origin: origin ? origin.toUpperCase() : undefined,
       destination: destination ? destination.toUpperCase() : undefined,
       max_budget: budget ? parseFloat(budget) : undefined,
@@ -61,9 +91,8 @@ export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g. Plan a weekend trip to Goa under ₹15,000 leaving Friday..."
+              placeholder="Enter instruction (e.g. Plan a 3-day trip from Delhi to Goa under ₹15,000)..."
               className="w-full px-4 py-3.5 pl-11 bg-cream-50/70 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-airline-sky/40 focus:border-airline-sky transition"
-              required
             />
             <Compass className="w-5 h-5 text-slate-400 absolute left-3.5 top-3.5" />
           </div>
@@ -88,32 +117,59 @@ export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
 
         {/* Precision Route & Budget Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
+          {/* Origin Dropdown */}
           <div>
             <label className="block text-[11px] font-semibold text-slate-600 uppercase mb-1 flex items-center gap-1">
               <MapPin className="w-3 h-3 text-airline-sky" /> Origin Airport
             </label>
-            <input
-              type="text"
-              value={origin}
-              onChange={(e) => setOrigin(e.target.value)}
-              placeholder="DEL"
-              className="w-full px-3 py-2 bg-cream-50/50 border border-slate-200 rounded-lg text-xs text-slate-900 font-semibold focus:outline-none focus:border-airline-sky"
-            />
+            <div className="relative">
+              <select
+                value={origin}
+                onChange={(e) => handleOriginChange(e.target.value)}
+                className="w-full px-3 py-2 pr-8 bg-cream-50/50 border border-slate-200 rounded-lg text-xs text-slate-900 font-semibold focus:outline-none focus:border-airline-sky focus:ring-1 focus:ring-airline-sky/40 cursor-pointer appearance-none transition"
+              >
+                <option value="">Select Origin</option>
+                {CITIES.map((city) => (
+                  <option
+                    key={city.code}
+                    value={city.code}
+                    disabled={city.code === destination}
+                  >
+                    {city.name} ({city.code})
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
+            </div>
           </div>
 
+          {/* Destination Dropdown */}
           <div>
             <label className="block text-[11px] font-semibold text-slate-600 uppercase mb-1 flex items-center gap-1">
               <MapPin className="w-3 h-3 text-airline-orange" /> Destination
             </label>
-            <input
-              type="text"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              placeholder="GOA"
-              className="w-full px-3 py-2 bg-cream-50/50 border border-slate-200 rounded-lg text-xs text-slate-900 font-semibold focus:outline-none focus:border-airline-sky"
-            />
+            <div className="relative">
+              <select
+                value={destination}
+                onChange={(e) => handleDestinationChange(e.target.value)}
+                className="w-full px-3 py-2 pr-8 bg-cream-50/50 border border-slate-200 rounded-lg text-xs text-slate-900 font-semibold focus:outline-none focus:border-airline-sky focus:ring-1 focus:ring-airline-sky/40 cursor-pointer appearance-none transition"
+              >
+                <option value="">Select Destination</option>
+                {CITIES.map((city) => (
+                  <option
+                    key={city.code}
+                    value={city.code}
+                    disabled={city.code === origin}
+                  >
+                    {city.name} ({city.code})
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
+            </div>
           </div>
 
+          {/* Budget Input */}
           <div>
             <label className="block text-[11px] font-semibold text-slate-600 uppercase mb-1 flex items-center gap-1">
               <IndianRupee className="w-3 h-3 text-emerald-600" /> Max Target Budget (₹)
@@ -122,16 +178,24 @@ export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
               type="number"
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
-              placeholder="15000"
+              placeholder="e.g. 15000"
               className="w-full px-3 py-2 bg-cream-50/50 border border-slate-200 rounded-lg text-xs text-slate-900 font-semibold focus:outline-none focus:border-airline-sky"
             />
           </div>
         </div>
 
+        {/* Same City Validation Message */}
+        {isSameCity && (
+          <div className="flex items-center gap-1.5 text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 p-2.5 rounded-lg">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>Origin and destination cannot be the same city. Please select different airports.</span>
+          </div>
+        )}
+
         {/* Submit CTA */}
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || isSameCity}
           className="w-full py-4 bg-airline-orange hover:bg-orange-700 text-white font-bold rounded-xl shadow-lg shadow-airline-orange/20 transition flex items-center justify-center space-x-2 text-sm disabled:opacity-50 cursor-pointer"
         >
           <Plane className="w-5 h-5 animate-pulse" />

@@ -5,53 +5,90 @@ import TripForm from "./components/TripForm";
 import TakeoffLoader from "./components/TakeoffLoader";
 import BoardingPass from "./components/BoardingPass";
 import ActionLog from "./components/ActionLog";
-import { planTrip, TripResponse } from "@/lib/api";
-import { Plane, Terminal, Sparkles, RefreshCw } from "lucide-react";
+import { planTrip, TripResponse } from "../lib/api";
+import { Plane, Terminal, Sparkles, RefreshCw, AlertCircle, ArrowLeft } from "lucide-react";
+
+type FlowState = "form" | "loading" | "results" | "error";
 
 export default function Home() {
-  const [loading, setLoading] = useState(false);
+  const [flowState, setFlowState] = useState<FlowState>("form");
+  const [isLoaderComplete, setIsLoaderComplete] = useState<boolean>(false);
   const [result, setResult] = useState<TripResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"pass" | "log">("pass");
 
   const handleFormSubmit = async (payload: {
-    query: string;
+    query?: string;
     origin?: string;
     destination?: string;
+    start_date?: string;
+    budget_inr?: number;
     max_budget?: number;
   }) => {
-    setLoading(true);
-    setError(null);
-    setResult(null);
+    setFlowState("loading");
+    setIsLoaderComplete(false);
+    setErrorMessage(null);
 
     try {
-      const response = await planTrip(payload);
+      const response = await planTrip({
+        origin: payload.origin,
+        destination: payload.destination,
+        start_date: payload.start_date,
+        budget_inr: payload.budget_inr || payload.max_budget,
+        query: payload.query
+      });
+
+      // Complete animation cycle (~800ms) before transitioning to results
+      setIsLoaderComplete(true);
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
       setResult(response);
+      setFlowState("results");
     } catch (err: any) {
-      setError(err.message || "Failed to execute trip plan.");
-    } finally {
-      setLoading(false);
+      setIsLoaderComplete(true);
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      setErrorMessage(err.message || "Failed to execute trip plan.");
+      setFlowState("error");
     }
   };
+
+  const handleReset = () => {
+    setFlowState("form");
+    setResult(null);
+    setErrorMessage(null);
+    setIsLoaderComplete(false);
+  };
+
+  const logsData = result?.action_log || result?.action_logs || [];
 
   return (
     <main className="min-h-screen bg-cream-50 text-slate-800 pb-16">
       {/* Airline Header Navigation */}
       <header className="border-b border-cream-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 cursor-pointer" onClick={handleReset}>
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-airline-orange to-airline-sky flex items-center justify-center text-white shadow-md">
               <Plane className="w-5 h-5" />
             </div>
             <div>
               <span className="font-black text-lg text-slate-900 tracking-tight block leading-none">AviaPlan</span>
-              <span className="text-[10px] font-bold text-airline-orange uppercase tracking-wider">Autonomous Trip Agent</span>
+              <span className="text-[10px] font-bold text-airline-orange uppercase tracking-wider">Smart Flight & Trip Planner</span>
             </div>
           </div>
 
           <div className="flex items-center space-x-2">
+            {flowState === "results" && (
+              <button
+                onClick={handleReset}
+                className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-cream-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition flex items-center gap-1.5"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>New Search</span>
+              </button>
+            )}
             <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-cream-100 text-slate-700 border border-slate-200">
-              Agentic AI Track
+              AI Travel Assistant
             </span>
           </div>
         </div>
@@ -61,7 +98,7 @@ export default function Home() {
       <section className="max-w-4xl mx-auto px-4 pt-10 pb-6 text-center space-y-3">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-airline-sky/10 text-airline-sky text-xs font-bold border border-airline-sky/20">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Multi-Tool LangGraph Agent with Live API Fallback</span>
+          <span>Planning made simple</span>
         </div>
         <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
           Where would you like to fly?
@@ -73,21 +110,40 @@ export default function Home() {
 
       {/* Main Flow Container */}
       <div className="max-w-5xl mx-auto px-4 space-y-8">
-        {/* Form Container */}
-        <TripForm onSubmit={handleFormSubmit} isLoading={loading} />
+        {/* Form State */}
+        {flowState === "form" && (
+          <TripForm onSubmit={handleFormSubmit} isLoading={false} />
+        )}
 
         {/* Loading State */}
-        {loading && <TakeoffLoader />}
+        {flowState === "loading" && (
+          <TakeoffLoader isComplete={isLoaderComplete} />
+        )}
 
-        {/* Error Notification */}
-        {error && (
-          <div className="max-w-2xl mx-auto p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium text-center">
-            ⚠️ {error}. Ensure your backend server is running on <code className="bg-red-100 px-1 py-0.5 rounded">http://localhost:8000</code>.
+        {/* Error State */}
+        {flowState === "error" && (
+          <div className="max-w-2xl mx-auto bg-white rounded-2xl p-8 border border-cream-200 shadow-xl text-center space-y-6 animate-fadeIn">
+            <div className="w-14 h-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto border border-red-200">
+              <AlertCircle className="w-8 h-8" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-extrabold text-slate-900">Flight Planning Interrupted</h2>
+              <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
+                {errorMessage || "Unable to reach the backend agent service."}
+              </p>
+            </div>
+            <button
+              onClick={handleReset}
+              className="px-6 py-3 bg-airline-orange hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-md transition inline-flex items-center space-x-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Retry Search</span>
+            </button>
           </div>
         )}
 
-        {/* Results Container */}
-        {result && (
+        {/* Results State */}
+        {flowState === "results" && result && (
           <div className="space-y-6 animate-fadeIn">
             {/* View Switcher Bar */}
             <div className="flex items-center justify-between bg-white p-2 rounded-2xl border border-cream-200 shadow-sm max-w-md mx-auto">
@@ -112,18 +168,18 @@ export default function Home() {
                 }`}
               >
                 <Terminal className="w-4 h-4" />
-                <span>Action Log ({result.action_logs?.length || 0})</span>
+                <span>Action Log ({logsData.length})</span>
               </button>
             </div>
 
             {/* Tab Views */}
             {activeTab === "pass" && <BoardingPass data={result} />}
-            {activeTab === "log" && <ActionLog logs={result.action_logs} />}
+            {activeTab === "log" && <ActionLog logs={logsData} />}
 
-            {/* Bottom Action Log Embed (always shown below for full transparency) */}
+            {/* Bottom Action Log Embed */}
             {activeTab === "pass" && (
               <div className="pt-6">
-                <ActionLog logs={result.action_logs} />
+                <ActionLog logs={logsData} />
               </div>
             )}
           </div>

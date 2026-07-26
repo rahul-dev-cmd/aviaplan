@@ -1,15 +1,61 @@
 "use client";
 
 import React from "react";
-import { ActionLogItem } from "@/lib/api";
+import { ActionLogItem } from "../../lib/api";
 import { Terminal, AlertTriangle, Zap, CheckCircle, Info, RefreshCw } from "lucide-react";
 
 interface ActionLogProps {
-  logs: ActionLogItem[];
+  logs?: (ActionLogItem | string)[];
 }
 
 export default function ActionLog({ logs }: ActionLogProps) {
   if (!logs || logs.length === 0) return null;
+
+  const parseLog = (log: ActionLogItem | string): { timestamp: string; node: string; status: string; message: string } => {
+    if (typeof log === "string") {
+      const match = log.match(/^\[(.*?)\]\s*(.*)$/);
+      const timestamp = match ? match[1] : "LOG";
+      const message = match ? match[2] : log;
+
+      let node = "AGENT";
+      let status = "INFO";
+
+      const msgLower = message.toLowerCase();
+      if (msgLower.includes("planning")) {
+        node = "PLANNER";
+        status = "INFO";
+      } else if (msgLower.includes("flight")) {
+        node = "FLIGHT_SEARCH";
+        status = "SUCCESS";
+      } else if (msgLower.includes("hotel")) {
+        node = "HOTEL_SEARCH";
+        status = "SUCCESS";
+      } else if (msgLower.includes("weather")) {
+        node = "WEATHER";
+        status = msgLower.includes("failed") ? "WARNING" : "SUCCESS";
+      } else if (msgLower.includes("exceeds") || msgLower.includes("retry")) {
+        node = "BUDGET_CHECK";
+        status = "RETRY";
+      } else if (msgLower.includes("selected")) {
+        node = "BUDGET_CHECK";
+        status = msgLower.includes("over_budget") ? "WARNING" : "SUCCESS";
+      } else if (msgLower.includes("finalized") || msgLower.includes("summary")) {
+        node = "SYNTHESIZER";
+        status = "SUCCESS";
+      }
+
+      return { timestamp, node, status, message };
+    }
+
+    return {
+      timestamp: log.timestamp || "LOG",
+      node: log.node || "AGENT",
+      status: log.status || "INFO",
+      message: log.message || ""
+    };
+  };
+
+  const parsedLogs = logs.map(parseLog);
 
   const getStatusBadge = (status: string) => {
     switch (status.toUpperCase()) {
@@ -28,7 +74,7 @@ export default function ActionLog({ logs }: ActionLogProps) {
       case "WARNING":
         return (
           <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-orange-100 text-orange-800 border border-orange-300">
-            <AlertTriangle className="w-3 h-3 text-orange-600" /> DEGRADED ROUTE
+            <AlertTriangle className="w-3 h-3 text-orange-600" /> ALERT / WARNING
           </span>
         );
       case "RETRY":
@@ -60,13 +106,13 @@ export default function ActionLog({ logs }: ActionLogProps) {
           </div>
         </div>
         <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-          {logs.length} Operations Logged
+          {parsedLogs.length} Operations Logged
         </span>
       </div>
 
       {/* Log Feed */}
       <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-2 font-mono text-xs scrollbar-thin">
-        {logs.map((log, index) => (
+        {parsedLogs.map((log, index) => (
           <div
             key={index}
             className={`p-3 rounded-xl border transition ${
